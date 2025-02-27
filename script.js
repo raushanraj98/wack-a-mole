@@ -127,6 +127,7 @@ function startGame() {
     });
     
     gameOverScreen.style.display = 'none';
+    restartBtn.style.display = 'none';
     
     peep();
 }
@@ -224,6 +225,3 @@ document.addEventListener('mousemove', function(e) {
         hammer.style.top = `${e.pageY - 30}px`;
     }
 });
-
-// Start the game
-startGame();
