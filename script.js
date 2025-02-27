@@ -197,8 +197,8 @@ function completeRound() {
     roundDisplay.textContent = round;
     hitsDisplay.textContent = 0;
     
-    // Increase speed for next round (by 0.05% of previous round)
-    gameSpeed = gameSpeed * 0.9995; // 0.05% faster
+    // Increase speed for next round (by 0.5% of previous round)
+    gameSpeed = gameSpeed * 0.995; // 0.5% faster
     
     // Activate friendly lady from round 3
     if (round >= 3) {
