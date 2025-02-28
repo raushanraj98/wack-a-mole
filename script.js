@@ -4,52 +4,20 @@ const scoreDisplay = document.getElementById('score');
 const roundDisplay = document.getElementById('round');
 const hitsDisplay = document.getElementById('hits');
 const gameOverScreen = document.getElementById('gameOver');
-const gameOverReason = document.getElementById('gameOverReason');
+const startScreen = document.getElementById('startScreen');
 const finalScoreDisplay = document.getElementById('finalScore');
 const restartBtn = document.getElementById('restartBtn');
+const startBtn = document.getElementById('startBtn');
 const hammer = document.getElementById('hammer');
-const grass = document.getElementById('grass');
 
 let score = 0;
 let round = 1;
 let hits = 0;
 let lastHole;
-let timeUp = false;
+let timeUp = true; // Start with game not active
 let gameSpeed = 1500; // Starting speed in ms
 let friendlyLadyActive = false;
 let strictManActive = false;
-
-// Create 3D grass blades
-function createGrass() {
-    for (let i = 0; i < 40; i++) {
-        const blade = document.createElement('div');
-        blade.className = 'grass-blade';
-        
-        // Random height between 60px and 150px
-        const height = 60 + Math.random() * 90;
-        blade.style.height = `${height}px`;
-        
-        // Random position along the bottom of the screen
-        const leftPos = Math.random() * 100;
-        blade.style.left = `${leftPos}%`;
-        
-        // Random animation delay for natural movement
-        blade.style.animationDelay = `${Math.random() * 5}s`;
-        
-        // Random width variance 
-        const width = 8 + Math.random() * 8;
-        blade.style.width = `${width}px`;
-        
-        // Random color variation
-        const greenHue = 90 + Math.floor(Math.random() * 30);
-        blade.style.background = `linear-gradient(to top, hsl(${greenHue}, 70%, 30%), hsl(${greenHue}, 80%, 50%))`;
-        
-        // Add z-index for depth effect
-        blade.style.zIndex = -Math.floor(leftPos / 10);
-        
-        grass.appendChild(blade);
-    }
-}
 
 function randomTime(min, max) {
     return Math.round(Math.random() * (max - min) + min);
@@ -88,7 +56,7 @@ function peep() {
         isWhackable = false;
     } else if (round >= 3 && friendlyLadyActive && rand < 0.3) {
         characterType = 'friendly-lady';
-        isWhackable = false;
+        isWhackable = false; // Now friendly lady is also not whackable
     }
     
     // Create and add the character
@@ -109,10 +77,16 @@ function peep() {
     }, 100);
 }
 
-function startGame() {
-    scoreDisplay.textContent = 0;
-    roundDisplay.textContent = 1;
-    hitsDisplay.textContent = 0;
+function initGame() {
+    // Hide start screen
+    startScreen.style.display = 'none';
+    
+    // Reset all holes to have furry boys
+    holes.forEach(hole => {
+        hole.innerHTML = '<div class="character furry-boy" data-whackable="true" data-type="furry-boy"></div>';
+    });
+    
+    // Set game state
     score = 0;
     round = 1;
     hits = 0;
@@ -121,56 +95,34 @@ function startGame() {
     friendlyLadyActive = false;
     strictManActive = false;
     
-    // Reset all holes to have furry boys
-    holes.forEach(hole => {
-        hole.innerHTML = '<div class="character furry-boy" data-whackable="true" data-type="furry-boy"></div>';
-    });
+    // Update displays
+    scoreDisplay.textContent = score;
+    roundDisplay.textContent = round;
+    hitsDisplay.textContent = hits;
     
-    gameOverScreen.style.display = 'none';
-    restartBtn.style.display = 'none';
-    
+    // Start the game
     peep();
 }
 
-function endGame(reason) {
+function startGame() {
+    gameOverScreen.style.display = 'none';
+    initGame();
+}
+
+function endGame() {
     timeUp = true;
     finalScoreDisplay.textContent = score;
-    
-    if (reason) {
-        gameOverReason.textContent = reason;
-    } else {
-        gameOverReason.textContent = "Game Over!";
-    }
-    
     gameOverScreen.style.display = 'flex';
 }
 
 function whack(e) {
-    if (!e.isTrusted) return; // Cheater!
+    if (!e.isTrusted || timeUp) return; // Cheater or game not active!
     
     // Check if the clicked element is a character
     if (!e.target.classList.contains('character')) return;
     
     const characterType = e.target.dataset.type;
-    
-    // Check if character is whackable (only furry boy is whackable)
-    if (characterType !== 'furry-boy') {
-        // Game over if you hit a non-whackable character
-        if (characterType === 'friendly-lady') {
-            endGame("Game Over! You hit the Friendly Lady!");
-        } else if (characterType === 'strict-man') {
-            endGame("Game Over! You hit the Strict Man!");
-        } else {
-            endGame();
-        }
-        return;
-    }
-    
-    e.target.classList.remove('up');
-    score++;
-    hits++;
-    scoreDisplay.textContent = score;
-    hitsDisplay.textContent = hits;
+    const isWhackable = e.target.dataset.whackable === "true";
     
     // Show hammer animation
     hammer.style.display = 'block';
@@ -185,9 +137,24 @@ function whack(e) {
         }, 100);
     }, 100);
     
-    // Check if round is complete
-    if (hits >= 10) {
-        completeRound();
+    if (!isWhackable) {
+        // Game over if you hit a non-whackable character
+        endGame();
+        return;
+    }
+    
+    // Only furry boy is whackable
+    if (characterType === 'furry-boy') {
+        e.target.classList.remove('up');
+        score++;
+        hits++;
+        scoreDisplay.textContent = score;
+        hitsDisplay.textContent = hits;
+        
+        // Check if round is complete
+        if (hits >= 10) {
+            completeRound();
+        }
     }
 }
 
@@ -211,17 +178,33 @@ function completeRound() {
     }
 }
 
-// Initialize grass
-createGrass();
-
-// Attach event listeners
+// Set up touch/click handlers
 document.addEventListener('click', whack);
+startBtn.addEventListener('click', startGame);
 restartBtn.addEventListener('click', startGame);
 
-// Track mouse for hammer
+// Track mouse/touch for hammer
 document.addEventListener('mousemove', function(e) {
     if (hammer.style.display === 'block') {
         hammer.style.left = `${e.pageX - 30}px`;
         hammer.style.top = `${e.pageY - 30}px`;
     }
 });
+
+// Handle touch events for mobile
+document.addEventListener('touchmove', function(e) {
+    if (hammer.style.display === 'block' && e.touches[0]) {
+        hammer.style.left = `${e.touches[0].pageX - 30}px`;
+        hammer.style.top = `${e.touches[0].pageY - 30}px`;
+    }
+}, { passive: true });
+
+document.addEventListener('touchstart', function(e) {
+    // Prevent zoom on double tap
+    if (e.touches.length > 1) {
+        e.preventDefault();
+    }
+}, { passive: false });
+
+// Make sure game doesn't start automatically
+timeUp = true;
