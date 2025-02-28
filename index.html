@@ -2,43 +2,66 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0 maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./index.css">
     <title>Whack-A-Mole Game</title>
-    <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <div class="cloud"></div>
-    <div class="cloud"></div>
-    <div class="cloud"></div>
-    
-    <div class="grass" id="grass"></div>
-    
-    <div class="game-info">
-        <div>Score: <span id="score">0</span></div>
-        <div>Round: <span id="round">1</span></div>
-        <div>Hits: <span id="hits">0</span>/10</div>
+    <div class="grass">
+        <div class="grass-blade" style="--rotate: 5deg;"></div>
+        <div class="grass-blade" style="--rotate: -3deg;"></div>
+        <div class="grass-blade" style="--rotate: 2deg;"></div>
+        <div class="grass-blade" style="--rotate: -4deg;"></div>
+        <div class="grass-blade" style="--rotate: 3deg;"></div>
+        <div class="grass-blade" style="--rotate: -1deg;"></div>
+        <div class="grass-blade" style="--rotate: 4deg;"></div>
+        <div class="grass-blade" style="--rotate: -2deg;"></div>
     </div>
     
-    <div class="game-board">
-        <div class="hole"><div class="character furry-boy"></div></div>
-        <div class="hole"><div class="character furry-boy"></div></div>
-        <div class="hole"><div class="character furry-boy"></div></div>
-        <div class="hole"><div class="character furry-boy"></div></div>
-        <div class="hole"><div class="character furry-boy"></div></div>
-        <div class="hole"><div class="character furry-boy"></div></div>
-        <div class="hole"><div class="character furry-boy"></div></div>
-        <div class="hole"><div class="character furry-boy"></div></div>
-        <div class="hole"><div class="character furry-boy"></div></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    <div class="cloud"></div>
+    
+    <div class="container">
+        <div class="game-info">
+            <div>Score: <span id="score">0</span></div>
+            <div>Round: <span id="round">1</span></div>
+            <div>Hits: <span id="hits">0</span>/10</div>
+        </div>
+        
+        <div class="instructions">
+            Hit the mole. Avoid hitting friendly lady after round 3 and strict man after round 6.
+        </div>
+        
+        <div class="game-board">
+            <div class="hole"><div class="character furry-boy"></div></div>
+            <div class="hole"><div class="character furry-boy"></div></div>
+            <div class="hole"><div class="character furry-boy"></div></div>
+            <div class="hole"><div class="character furry-boy"></div></div>
+            <div class="hole"><div class="character furry-boy"></div></div>
+            <div class="hole"><div class="character furry-boy"></div></div>
+            <div class="hole"><div class="character furry-boy"></div></div>
+            <div class="hole"><div class="character furry-boy"></div></div>
+            <div class="hole"><div class="character furry-boy"></div></div>
+        </div>
     </div>
     
     <div id="hammer" class="hammer"></div>
-    <button id="restartBtn">Start Game</button>
+    
+    <div id="startScreen" class="start-screen">
+        <div>
+            <h1>Whack-A-Mole</h1>
+            <p>Click the mole to score points!</p>
+            <p>Avoid friendly lady and strict man!</p>
+            <button id="startBtn">Start Game</button>
+        </div>
+    </div>
     
     <div id="gameOver" class="game-over">
-        <div id="gameOverReason">Game Over!</div>
+        <div>Game Over!</div>
         <div>Your score: <span id="finalScore">0</span></div>
         <button id="restartBtn">Restart Game</button>
     </div>
-    <script src="script.js"></script>
+    <script src="./script.js"></script>
 </body>
 </html>
