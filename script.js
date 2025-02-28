@@ -1,14 +1,40 @@
+// Create tall grass elements
+const grassContainer = document.getElementById('grassContainer');
+const grassCount = 40;
+
+for (let i = 0; i < grassCount; i++) {
+    const grass = document.createElement('div');
+    grass.className = 'grass';
+    
+    // Random properties
+    const height = Math.random() * 150 + 100; // Between 100-250px
+    const width = Math.random() * 20 + 10; // Between 10-30px
+    const left = Math.random() * 100; // 0-100% of the container width
+    const rotation = Math.random() * 10 - 5; // -5 to 5 degrees
+    const delay = Math.random() * 2; // 0-2s delay for animation
+    
+    grass.style.height = `${height}px`;
+    grass.style.width = `${width}px`;
+    grass.style.left = `${left}%`;
+    grass.style.transform = `rotate(${rotation}deg)`;
+    grass.style.animationDelay = `${delay}s`;
+    
+    // Add some 3D depth with z-index
+    grass.style.zIndex = Math.floor(left) > 50 ? -1 : -2;
+    
+    grassContainer.appendChild(grass);
+}
+
 const holes = document.querySelectorAll('.hole');
-const characters = document.querySelectorAll('.character');
 const scoreDisplay = document.getElementById('score');
 const roundDisplay = document.getElementById('round');
 const hitsDisplay = document.getElementById('hits');
 const gameOverScreen = document.getElementById('gameOver');
-const gameOverReason = document.getElementById('gameOverReason');
 const finalScoreDisplay = document.getElementById('finalScore');
 const restartBtn = document.getElementById('restartBtn');
+const startBtn = document.getElementById('startBtn');
+const startScreen = document.getElementById('startScreen');
 const hammer = document.getElementById('hammer');
-const grass = document.getElementById('grass');
 
 let score = 0;
 let round = 1;
@@ -18,38 +44,7 @@ let timeUp = false;
 let gameSpeed = 1500; // Starting speed in ms
 let friendlyLadyActive = false;
 let strictManActive = false;
-
-// Create 3D grass blades
-function createGrass() {
-    for (let i = 0; i < 40; i++) {
-        const blade = document.createElement('div');
-        blade.className = 'grass-blade';
-        
-        // Random height between 60px and 150px
-        const height = 60 + Math.random() * 90;
-        blade.style.height = `${height}px`;
-        
-        // Random position along the bottom of the screen
-        const leftPos = Math.random() * 100;
-        blade.style.left = `${leftPos}%`;
-        
-        // Random animation delay for natural movement
-        blade.style.animationDelay = `${Math.random() * 5}s`;
-        
-        // Random width variance 
-        const width = 8 + Math.random() * 8;
-        blade.style.width = `${width}px`;
-        
-        // Random color variation
-        const greenHue = 90 + Math.floor(Math.random() * 30);
-        blade.style.background = `linear-gradient(to top, hsl(${greenHue}, 70%, 30%), hsl(${greenHue}, 80%, 50%))`;
-        
-        // Add z-index for depth effect
-        blade.style.zIndex = -Math.floor(leftPos / 10);
-        
-        grass.appendChild(blade);
-    }
-}
+let gameStarted = false;
 
 function randomTime(min, max) {
     return Math.round(Math.random() * (max - min) + min);
@@ -95,7 +90,6 @@ function peep() {
     const character = document.createElement('div');
     character.className = `character ${characterType}`;
     character.dataset.whackable = isWhackable;
-    character.dataset.type = characterType;
     hole.appendChild(character);
     
     // Make character appear
@@ -109,10 +103,16 @@ function peep() {
     }, 100);
 }
 
-function startGame() {
+function initGame() {
+    // Reset initial display
     scoreDisplay.textContent = 0;
     roundDisplay.textContent = 1;
     hitsDisplay.textContent = 0;
+    
+    // Hide start screen
+    startScreen.style.display = 'none';
+    
+    // Reset game state
     score = 0;
     round = 1;
     hits = 0;
@@ -120,49 +120,37 @@ function startGame() {
     gameSpeed = 1500;
     friendlyLadyActive = false;
     strictManActive = false;
+    gameStarted = true;
     
     // Reset all holes to have furry boys
     holes.forEach(hole => {
-        hole.innerHTML = '<div class="character furry-boy" data-whackable="true" data-type="furry-boy"></div>';
+        hole.innerHTML = '<div class="character furry-boy" data-whackable="true"></div>';
     });
     
-    gameOverScreen.style.display = 'none';
-    restartBtn.style.display = 'none';
-    
+    // Start spawning characters
     peep();
 }
 
-function endGame(reason) {
+function endGame() {
     timeUp = true;
     finalScoreDisplay.textContent = score;
-    
-    if (reason) {
-        gameOverReason.textContent = reason;
-    } else {
-        gameOverReason.textContent = "Game Over!";
-    }
-    
     gameOverScreen.style.display = 'flex';
+    gameStarted = false;
 }
 
 function whack(e) {
+    if (!gameStarted) return;
     if (!e.isTrusted) return; // Cheater!
     
     // Check if the clicked element is a character
     if (!e.target.classList.contains('character')) return;
     
-    const characterType = e.target.dataset.type;
+    // Check if character is whackable
+    const isWhackable = e.target.dataset.whackable === "true";
     
-    // Check if character is whackable (only furry boy is whackable)
-    if (characterType !== 'furry-boy') {
+    if (!isWhackable) {
         // Game over if you hit a non-whackable character
-        if (characterType === 'friendly-lady') {
-            endGame("Game Over! You hit the Friendly Lady!");
-        } else if (characterType === 'strict-man') {
-            endGame("Game Over! You hit the Strict Man!");
-        } else {
-            endGame();
-        }
+        endGame();
         return;
     }
     
@@ -197,8 +185,8 @@ function completeRound() {
     roundDisplay.textContent = round;
     hitsDisplay.textContent = 0;
     
-    // Increase speed for next round (by 0.5% of previous round)
-    gameSpeed = gameSpeed * 0.995; // 0.5% faster
+    // Increase speed by 0.5% (multiply by 0.995 for proper decrease)
+    gameSpeed = gameSpeed * 0.995;
     
     // Activate friendly lady from round 3
     if (round >= 3) {
@@ -211,12 +199,13 @@ function completeRound() {
     }
 }
 
-// Initialize grass
-createGrass();
-
 // Attach event listeners
 document.addEventListener('click', whack);
-restartBtn.addEventListener('click', startGame);
+restartBtn.addEventListener('click', function() {
+    gameOverScreen.style.display = 'none';
+    initGame();
+});
+startBtn.addEventListener('click', initGame);
 
 // Track mouse for hammer
 document.addEventListener('mousemove', function(e) {
